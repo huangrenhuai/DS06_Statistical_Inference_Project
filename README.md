@@ -1,1 +1,2 @@
-# DS07_Regression_Models
+# DS06_Statistical Inference Project
+## Course 06 
