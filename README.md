@@ -1,2 +1,5 @@
 # DS06_Statistical Inference Project
-## Course 06 
+
+## Assignment_01
+https://huangrenhuai.github.io/DS06_Statistical_Inference_Project/ds06p3a.html
+
