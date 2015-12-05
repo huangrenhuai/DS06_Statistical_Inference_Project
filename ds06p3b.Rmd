@@ -1,0 +1,65 @@
+---
+title: 'Statistical Inference Project: part 2'
+output: html_document
+---
+**Instruction**: Now in the second portion of the class, we're going to analyze the ToothGrowth data in the R datasets package.  
+
+1. Load the ToothGrowth data and perform some basic exploratory data analyses 
+```{r loading, fig.height=3, fig.width=5, warning=F}
+data(ToothGrowth); 
+str(ToothGrowth); 
+
+library(ggplot2)
+ggplot(data=ToothGrowth, aes(x=factor(dose), y=len, color=supp))  + 
+    geom_point()+ 
+    xlab("Dose")+
+    ylab("Length")+
+    theme_bw()+
+    ggtitle("Comparing tooth growth by supp and dose")
+```
+
+2. Provide a basic summary of the data.
+*Summary:* 
+
+- The data has 60 records and three variables(len, supp, dose). 
+- There are three doses (0.5, 1, 2) under the dose varialble and 2 factors ("VC", "OJ") under the supp variable.
+- The len variable has the tooth growth data, which can be divided into to six group according to the variables dose and supp. 
+- Below is a table reshaped to show the mean and standard deviation of each group.
+```{r, results='asis', echo=TRUE}
+
+ToothGrowth$ID <-rep(1:10,6);library(reshape2); 
+dat <- dcast(ToothGrowth, dose+supp~ID, value.var="len"); 
+
+names(dat)[-(1:2)]<-paste("len_",names(dat[-(1:2)]), sep="");
+dat$mean<-sapply(1:6, function(x) {mean(as.numeric(dat[x,3:12]))});
+dat$sd<-sapply(1:6, function(x) {sd(as.numeric(dat[x,3:12]))});
+dat$Group<-1:6
+library(xtable);
+print(xtable(dat[-(3:12)]),type='html')
+```
+
+3. Use confidence intervals and hypothesis tests to compare tooth growth by supp and dose. (Use the techniques from class even if there's other approaches worth considering)
+
+- calculate the 95% confidence interval between the two groups as stated in the table below. we use unpaired t-test assuming the groups are independent. 
+- We first tried unequal variance t-test. we also tried t.test assuming equal variance. Both equal or unequal variances reach a same conclusion.
+
+```{r CI, results='asis'}
+conFun <- function(m=1, n=2, df=dat) {
+    temp<-t.test(df[m,3:12],df[n,3:12],paired=FALSE, var.equal=FALSE)$conf[1:2];
+    return(data.frame(
+        Data_1 = paste("group_",m,": dose=",df[m,1],", supp=",df[m,2],sep=""),
+        Data_2 = paste("group_",n,": dose=",df[n,1],", supp=",df[n,2],sep=""),
+        Lowlimit = temp[1],
+        Uplimit  = temp[2]))
+    }
+
+print(xtable(rbind(conFun(1,2),conFun(3,4),conFun(5,6))),type='html')
+print(xtable(rbind(conFun(1,3),conFun(3,5),conFun(2,4),conFun(4,6))),type='html')
+```
+
+
+4. State your conclusions and the assumptions needed for your conclusions. 
+
+- The 95% confidence intervals (or CI) between "OJ" and "VC" for dose =0.5 and 1 is above zero, however the 95% CI between "OJ" and "VC" for the dose of 2 includes zero. 
+- We have 95% confidence that "OJ"" has more effect on the tooth growth that "VC" at lower dose (0.5 and 1).
+- "OJ" and "VC" have similar effect on tooth growth at a higher dose of 2. 
